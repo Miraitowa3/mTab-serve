@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>微信公众号扫码登录</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                margin-top: 50px;
+            }
+            #qrcode img {
+                width: 200px;
+                height: 200px;
+            }
+            #user-info {
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>微信公众号扫码登录</h1>
+        <div id="qrcode">
+            <p>请使用微信扫描二维码登录</p>
+        </div>
+        <div id="user-info" style="display: none">
+            <h2>登录成功！</h2>
+            <p>用户信息：</p>
+            <pre id="user-data"></pre>
+        </div>
+
+        <script src="cc.js"></script>
+    </body>
+</html>
