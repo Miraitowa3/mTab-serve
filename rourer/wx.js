@@ -1,6 +1,7 @@
 const express = require('express');
 const sha1 = require('sha1');
-const config = require('../utils/config');
+const { wxConfig } = require('../utils/config');
+const Db = require('../utils/Db');
 const axios = require('axios');
 const { Msg } = require('../utils/msg');
 const { getUserDataAsync, parseXMLAsync, formatMessage } = require('../utils/tool');
@@ -14,7 +15,7 @@ router.get('/', function (req, res) {
     //https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Access_Overview.html
 
     const { signature, timestamp, nonce, echostr } = req.query;
-    const arr = [timestamp, nonce, config.token].sort();
+    const arr = [timestamp, nonce, wxConfig.token].sort();
     const str = arr.join('');
     const sha1Str = sha1(str);
 
@@ -36,7 +37,7 @@ const sendTemplateMessage = async (template_id, dat, openid) => {
             touser: openid,
             template_id: template_id,
             data: dat,
-            appid: config.appID
+            appid: wxConfig.appID
         }
     };
     axios
@@ -80,9 +81,9 @@ async function getAccessToken() {
 
     const api =
         'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' +
-        config.appID +
+        wxConfig.appID +
         '&secret=' +
-        config.appsecret;
+        wxConfig.appsecret;
     const { data: result, status } = await axios.get(api);
 
     if (status === 200 && !result.errcode) {
