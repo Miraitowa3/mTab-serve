@@ -52,11 +52,15 @@ const sendTemplateMessage = async (template_id, dat, openid) => {
 router.post('/', async function (req, res) {
     const xmlData = await getUserDataAsync(req);
     const data = formatMessage(await parseXMLAsync(xmlData));
-    console.log(1111111111, data);
-
-    sendTemplateMessage('9yG6Hc7e18y5tdrNPaPWy51T0rUr0JE__PmFUFLJKrI', {}, data.FromUserName);
-
-    res.send('success');
+    if (
+        (data.MsgType === 'event' && data.Event === 'SCAN' && data.Ticket) ||
+        (data.MsgType === 'event' && data.Event === 'subscribe' && data.Ticket)
+    ) {
+        await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, data.FromUserName);
+        res.send('success');
+    } else {
+        res.send('error');
+    }
 });
 
 // 生成临时二维码
