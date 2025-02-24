@@ -6,7 +6,7 @@ const axios = require('axios');
 const { Msg } = require('../utils/msg');
 const { getUserDataAsync, parseXMLAsync, formatMessage } = require('../utils/tool');
 const router = express.Router();
-
+const moment = require('moment');
 let ACCESS_TOKEN = null;
 let ACCESS_TOKEN_EXPIRE_TIME = null;
 
@@ -25,6 +25,10 @@ router.get('/', function (req, res) {
         res.send('error');
     }
 });
+async function generateId(length = 10) {
+    const { nanoid } = await import('nanoid');
+    return nanoid(length);
+}
 
 //发送模板信息
 const sendTemplateMessage = async (template_id, dat, openid) => {
@@ -56,7 +60,31 @@ router.post('/', async function (req, res) {
         (data.MsgType === 'event' && data.Event === 'SCAN' && data.Ticket) ||
         (data.MsgType === 'event' && data.Event === 'subscribe' && data.Ticket)
     ) {
-        await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, data.FromUserName);
+        let user = await Db.select(req, `SELECT * FROM wechat_users WHERE openid='${data.FromUserName}'`);
+
+        if (!user) {
+            // 创建新用户
+            const insertId = await Db.insert(req, 'users', {
+                created_at: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                username: 'mTab' + (await generateId(7))
+            });
+
+            await Db.insert(req, 'wechat_users', { openid: data.FromUserName, user_id: insertId });
+            user = {
+                id: insertId
+            };
+        }
+
+        // 记录登录日志
+        await Db.insert(req, 'login_logs', {
+            user_id: user.id,
+            login_method: 'wechat',
+            ip_address: req.ip,
+            user_agent: req.headers['user-agent']
+        });
+
+        // await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, data.FromUserName);
+
         res.send('success');
     } else {
         res.send('error');

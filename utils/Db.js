@@ -1,7 +1,6 @@
 var mysql = require('mysql2'); // node-mysql module
 var myConnection = require('express-myconnection'); // express连接mysql的中间件
-// const { getModel } = require('../model'); // 获取对应表model模型字段
-// const { validator } = require('../validator'); // 引入数据合法性验证
+
 const { dbConfig } = require('./config');
 
 class Db {
