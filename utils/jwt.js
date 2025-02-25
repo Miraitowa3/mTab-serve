@@ -1,7 +1,7 @@
 const { privateKey, publicKey } = require('./generateKey');
 const jwt = require('jsonwebtoken');
 // 封装生成 JWT 的方法
-function generateJWT(payload, options = { algorithm: 'RS256', expiresIn: 10 }) {
+function generateJWT(payload, options = { algorithm: 'RS256', expiresIn: 60 * 60 * 2 }) {
     // 默认使用 RS256 算法
     if (!options.algorithm) {
         options.algorithm = 'RS256';

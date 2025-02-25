@@ -4,6 +4,7 @@ const { wxConfig } = require('../utils/config');
 const Db = require('../utils/Db');
 const axios = require('axios');
 const { Msg } = require('../utils/msg');
+const { generateJWT, verifyJWT } = require('../utils/jwt');
 const { getUserDataAsync, parseXMLAsync, formatMessage } = require('../utils/tool');
 const router = express.Router();
 const moment = require('moment');
@@ -70,24 +71,40 @@ router.post('/', async function (req, res) {
             });
 
             await Db.insert(req, 'wechat_users', { openid: data.FromUserName, user_id: insertId });
-            user = {
-                id: insertId
-            };
+            user = [
+                {
+                    user_id: insertId
+                }
+            ];
         }
+        // // 生成会话令牌
+        // const token = generateJWT({
+        //     user_id: 1
+        // });
+
+        // const [status, { exp }] = verifyJWT(token);
+        // if (status) {
+        //     await Db.insert(req, 'sessions', {
+        //         user_id: user[0].user_id,
+        //         token,
+        //         expires_at: moment(exp * 1000).format('YYYY-MM-DD HH:mm:ss')
+        //     });
+        // }
 
         // 记录登录日志
         await Db.insert(req, 'login_logs', {
-            user_id: user.id,
+            user_id: user[0].user_id,
             login_method: 'wechat',
             ip_address: req.ip,
-            user_agent: req.headers['user-agent']
+            user_agent: req.headers['user-agent'],
+            login_time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
         });
 
-        // await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, data.FromUserName);
+        await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, data.FromUserName);
 
-        res.send('success');
+        res.send(Msg(200, 'sucess', { token }));
     } else {
-        res.send('error');
+        res.send('');
     }
 });
 
