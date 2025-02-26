@@ -11,7 +11,8 @@ app.use(cors());
 // 设置静态文件目录
 app.use(express.static(path.join(__dirname, 'pubilc')));
 app.use(dbObj.connection); // 使用单例模式建立数据库连接， 给express应用对象添加中间件功能
-
+app.use(express.json()); // 必须在路由之前
+app.use(express.urlencoded({ extended: true })); // 必须在路由之前
 app.use('/wx', wx);
 
 app.listen(port, () => {

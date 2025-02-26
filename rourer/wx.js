@@ -77,34 +77,58 @@ router.post('/', async function (req, res) {
                 }
             ];
         }
-        // // 生成会话令牌
-        // const token = generateJWT({
-        //     user_id: 1
-        // });
 
-        // const [status, { exp }] = verifyJWT(token);
-        // if (status) {
-        //     await Db.insert(req, 'sessions', {
-        //         user_id: user[0].user_id,
-        //         token,
-        //         expires_at: moment(exp * 1000).format('YYYY-MM-DD HH:mm:ss')
-        //     });
-        // }
+        let sessions = await Db.select(req, `SELECT * FROM sessions WHERE ticket='${data.Ticket}'`);
+        if (!sessions[0].user_id) {
+            await Db.update(
+                req,
+                'sessions',
+                { user_id: user[0].user_id, login: '1' },
+                ` WHERE id = ${sessions[0].id}`
+            );
+        }
+
+        res.send('sucess');
+    } else {
+        res.send('');
+    }
+});
+router.post('/login', async function (req, res) {
+    const { ticket } = req.body;
+    const sessions = await Db.select(req, `SELECT * FROM sessions WHERE ticket='${ticket}'`);
+    if (sessions && sessions[0].user_id) {
+        // // 生成会话令牌
+        const token = generateJWT({
+            uid: sessions[0].user_id
+        });
+        const [status, { exp }] = verifyJWT(token);
+        if (status) {
+            await Db.update(
+                req,
+                'sessions',
+                {
+                    token,
+                    expires_at: moment(exp * 1000).format('YYYY-MM-DD HH:mm:ss')
+                },
+                ` WHERE id = ${sessions[0].id}`
+            );
+        }
 
         // 记录登录日志
         await Db.insert(req, 'login_logs', {
-            user_id: user[0].user_id,
+            user_id: sessions[0].user_id,
             login_method: 'wechat',
             ip_address: req.ip,
             user_agent: req.headers['user-agent'],
             login_time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
         });
-
-        await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, data.FromUserName);
+        const user = await Db.select(
+            req,
+            `SELECT * FROM wechat_users WHERE user_id='${sessions[0].user_id}'`
+        );
+        await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, user[0].openid);
 
         res.send(Msg(200, 'sucess', { token }));
-    } else {
-        res.send('');
     }
 });
 
@@ -151,10 +175,14 @@ router.get('/qrcode', async (req, res) => {
         const qrCodeUrl = `https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=${encodeURIComponent(
             qrCodeData.ticket
         )}`;
-
+        await Db.insert(req, 'sessions', {
+            ticket: qrCodeData.ticket,
+            login: '0'
+        });
         res.send(
             Msg(200, '成功', {
                 url: qrCodeUrl,
+                ticket: qrCodeData.ticket,
                 expire_seconds: Date.now() + qrCodeData.expire_seconds * 1000 - 10 * 1000
             })
         );
