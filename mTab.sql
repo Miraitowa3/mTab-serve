@@ -1,49 +1,90 @@
--- 创建数据库 mTab
-CREATE DATABASE IF NOT EXISTS mTab;
-USE mTab;
+/*
+ Navicat Premium Dump SQL
 
--- 创建 users 表
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 用户唯一 ID
-    username VARCHAR(255) UNIQUE,      -- 用户名（用于账号密码登录）
-    password_hash VARCHAR(255),        -- 密码哈希值（用于账号密码登录）
-    email VARCHAR(255) UNIQUE,         -- 邮箱（可选，用于账号密码登录）
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- 更新时间
-);
+ Source Server         : test
+ Source Server Type    : MySQL
+ Source Server Version : 80039 (8.0.39)
+ Source Host           : localhost:3306
+ Source Schema         : mtab
 
--- 创建 wechat_users 表
-CREATE TABLE wechat_users (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 微信用户记录 ID
-    user_id INT UNIQUE,               -- 关联到 users 表的 id
-    openid VARCHAR(255) UNIQUE,       -- 微信用户的唯一标识
-    unionid VARCHAR(255) UNIQUE,      -- 微信开放平台的唯一标识（可选）
-    nickname VARCHAR(255),            -- 微信昵称
-    avatar_url VARCHAR(255),          -- 微信头像
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 更新时间
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE -- 外键关联到 users 表
-);
+ Target Server Type    : MySQL
+ Target Server Version : 80039 (8.0.39)
+ File Encoding         : 65001
 
+ Date: 26/02/2025 18:01:01
+*/
 
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
--- 创建 sessions 表
-CREATE TABLE sessions (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 会话记录 ID
-    user_id INT,                       -- 关联到 users 表的 id
-    session_token VARCHAR(255) UNIQUE, -- 会话令牌
-    expires_at TIMESTAMP,              -- 会话过期时间
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE -- 外键关联到 users 表
-);
+-- ----------------------------
+-- Table structure for login_logs
+-- ----------------------------
+DROP TABLE IF EXISTS `login_logs`;
+CREATE TABLE `login_logs`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NULL DEFAULT NULL,
+  `login_method` enum('password','wechat') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `login_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `user_agent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `user_id`(`user_id` ASC) USING BTREE,
+  CONSTRAINT `login_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 189 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
--- 创建 login_logs 表
-CREATE TABLE login_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 登录日志记录 ID
-    user_id INT,                       -- 关联到 users 表的 id
-    login_method ENUM('password', 'wechat'), -- 登录方式
-    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 登录时间
-    ip_address VARCHAR(45),            -- 登录 IP 地址
-    user_agent VARCHAR(255),           -- 用户代理（浏览器信息）
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE -- 外键关联到 users 表
-);
+-- ----------------------------
+-- Table structure for sessions
+-- ----------------------------
+DROP TABLE IF EXISTS `sessions`;
+CREATE TABLE `sessions`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NULL DEFAULT NULL,
+  `token` varchar(530) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `login` enum('0','1') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
+  `ticket` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `ticket`(`ticket` ASC) USING BTREE,
+  INDEX `user_id`(`user_id` ASC) USING BTREE,
+  CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for users
+-- ----------------------------
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `username`(`username` ASC) USING BTREE,
+  UNIQUE INDEX `email`(`email` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for wechat_users
+-- ----------------------------
+DROP TABLE IF EXISTS `wechat_users`;
+CREATE TABLE `wechat_users`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NULL DEFAULT NULL,
+  `openid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `unionid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `nickname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `avatar_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `user_id`(`user_id` ASC) USING BTREE,
+  UNIQUE INDEX `openid`(`openid` ASC) USING BTREE,
+  UNIQUE INDEX `unionid`(`unionid` ASC) USING BTREE,
+  CONSTRAINT `wechat_users_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
