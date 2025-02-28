@@ -129,6 +129,8 @@ router.post('/login', async function (req, res) {
         await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, user[0].openid);
 
         res.send(Msg(200, 'sucess', { token }));
+    } else {
+        res.send(Msg(200, 'fail', {}));
     }
 });
 
