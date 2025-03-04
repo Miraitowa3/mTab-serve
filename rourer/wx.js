@@ -128,9 +128,9 @@ router.post('/login', async function (req, res) {
         );
         await sendTemplateMessage('A1OwgajrfK49gnj8dnHK4Ae3FN022p-mSDbWCfNGBEU', {}, user[0].openid);
 
-        res.send(Msg(200, 'sucess', { token }));
+        res.send(Msg(200, '请求成功', { token, sucess: true }));
     } else {
-        res.send(Msg(200, 'fail', {}));
+        res.send(Msg(200, '请求成功', { sucess: false }));
     }
 });
 
@@ -182,14 +182,14 @@ router.get('/qrcode', async (req, res) => {
             login: '0'
         });
         res.send(
-            Msg(200, '成功', {
+            Msg(200, '请求成功', {
                 url: qrCodeUrl,
                 ticket: qrCodeData.ticket,
                 expire_seconds: Date.now() + qrCodeData.expire_seconds * 1000 - 10 * 1000
             })
         );
     } catch (error) {
-        res.send(Msg(500, '失败'));
+        res.send(Msg(500, '请求失败'));
     }
 });
 
