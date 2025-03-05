@@ -11,11 +11,25 @@
  Target Server Version : 80039 (8.0.39)
  File Encoding         : 65001
 
- Date: 26/02/2025 18:01:01
+ Date: 05/03/2025 18:00:22
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for captcha
+-- ----------------------------
+DROP TABLE IF EXISTS `captcha`;
+CREATE TABLE `captcha`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `user_id` int NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `email`(`email` ASC) USING BTREE,
+  INDEX `user_id`(`user_id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for login_logs
@@ -31,7 +45,7 @@ CREATE TABLE `login_logs`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `user_id`(`user_id` ASC) USING BTREE,
   CONSTRAINT `login_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 189 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 257 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for sessions
@@ -49,7 +63,7 @@ CREATE TABLE `sessions`  (
   UNIQUE INDEX `ticket`(`ticket` ASC) USING BTREE,
   INDEX `user_id`(`user_id` ASC) USING BTREE,
   CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 73 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for users
