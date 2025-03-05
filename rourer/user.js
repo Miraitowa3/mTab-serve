@@ -37,9 +37,32 @@ router.post('/sendVerifyCode', async (req, res) => {
                 console.log('Error occurred:', error);
             } else {
                 await Db.insert(req, 'captcha', { email, code });
-                res.send(Msg(200, '请求成功', { sucess: false }));
+                res.send(Msg(200, '请求验证码发送成功,请进入邮箱查看成功', ''));
             }
         });
+    } else {
+        if (data[0].user_id) {
+            res.send(Msg(500, '此邮箱已注册', ''));
+        } else {
+            // 邮件内容
+            const code = generateVerificationCode();
+            const mailOptions = {
+                from: 'snows_l@qq.com', // 发件人地址
+                to: email, // 收件人地址
+                subject: '验证码', // 邮件主题
+                text: `您的验证码是: ${code}` // 邮件内容
+            };
+
+            // 发送邮件
+            transporter.sendMail(mailOptions, async (error, info) => {
+                if (error) {
+                    console.log('Error occurred:', error);
+                } else {
+                    await Db.update(req, 'captcha', { code }, ` WHERE email = '${email}'`);
+                    res.send(Msg(200, '请求验证码发送成功,请进入邮箱查看成功', ''));
+                }
+            });
+        }
     }
 });
 module.exports = router;
