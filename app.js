@@ -3,6 +3,8 @@ const app = express();
 const cors = require('cors');
 const path = require('path');
 const wx = require('./rourer/wx');
+const user = require('./rourer/user');
+
 const dbObj = require('./utils/Db'); // 数据库对象
 
 const port = 3000;
@@ -14,6 +16,7 @@ app.use(dbObj.connection); // 使用单例模式建立数据库连接， 给expr
 app.use(express.json()); // 必须在路由之前
 app.use(express.urlencoded({ extended: true })); // 必须在路由之前
 app.use('/wx', wx);
+app.use('/user', user);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
