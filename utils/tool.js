@@ -1,4 +1,5 @@
 const { parseString } = require('xml2js');
+
 module.exports = {
     getUserDataAsync(req) {
         return new Promise((resolve, reject) => {
@@ -34,5 +35,9 @@ module.exports = {
             }
             return message;
         }
+    },
+    // 生成随机验证码
+    generateVerificationCode() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
     }
 };
