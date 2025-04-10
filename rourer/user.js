@@ -22,8 +22,14 @@ router.post('/sendVerifyCode', async (req, res) => {
             subject: '验证码', // 邮件主题
             text: `您的验证码是: ${code}` // 邮件内容
         });
+
         if (status) {
-            await Db.insert(req, 'captcha', { email, code, expires_at: new Date().getTime() + 60 * 1000 });
+            let aa = await Db.insert(req, 'captcha', {
+                email,
+                code,
+                expires_at: new Date().getTime() + 60 * 1000 + ''
+            });
+
             res.send(Msg(200, '请求验证码发送成功,请进入邮箱查看成功', ''));
         } else {
             res.send(Msg(500, '验证码发送失败,请稍后再试', ''));
@@ -55,6 +61,7 @@ router.post('/sendVerifyCode', async (req, res) => {
 router.post('/register', async (req, res) => {
     const { email, password, code, username } = req.body;
     const data = await Db.select(req, `SELECT * FROM captcha WHERE email='${email}'`);
+
     if (!data) {
         res.send(Msg(500, '请发送验证码', ''));
     } else {
@@ -86,6 +93,49 @@ router.post('/register', async (req, res) => {
         }
     }
 });
+router.post('/update', async (req, res) => {
+    let data = req.body;
+
+    const [{ count }] = await Db.select(
+        req,
+        `SELECT COUNT(*) as count FROM user_info WHERE user_id='${req.user}'`
+    );
+
+    if (count >= 5) {
+        await Db.delete(
+            req,
+            `DELETE FROM user_info WHERE user_id='${req.user}' ORDER BY create_time ASC LIMIT 1`
+        );
+    }
+    const create_time = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    await Db.insert(req, 'user_info', {
+        create_time: create_time,
+        config: JSON.stringify(data),
+        user_id: req.user
+    });
+    res.send(
+        Msg(200, '成功', {
+            create_time: create_time
+        })
+    );
+});
+router.get('/config', async (req, res) => {
+    const data = await Db.select(
+        req,
+        `SELECT * FROM user_info WHERE user_id='${req.user}' ORDER BY create_time DESC LIMIT 1`
+    );
+    if (data && data.length > 0) {
+        res.send(
+            Msg(200, '成功', {
+                id: data[0].id,
+                config: JSON.parse(data[0].config),
+                create_time: data[0].create_time
+            })
+        );
+    } else {
+        res.send(Msg(500, '未找到配置信息', {}));
+    }
+});
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const data = await Db.select(req, `SELECT * FROM users WHERE email='${email}'`);
@@ -105,7 +155,12 @@ router.post('/login', async (req, res) => {
                 uid: data[0].id
             });
 
-            res.send(Msg(200, '登录成功', { token }));
+            res.send(
+                Msg(200, '登录成功', {
+                    token,
+                    userInfo: { username: data[0].username, email: data[0].email }
+                })
+            );
         } else {
             res.send(Msg(500, '密码错误', ''));
         }

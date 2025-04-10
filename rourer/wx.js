@@ -57,6 +57,8 @@ const sendTemplateMessage = async (template_id, dat, openid) => {
 router.post('/', async function (req, res) {
     const xmlData = await getUserDataAsync(req);
     const data = formatMessage(await parseXMLAsync(xmlData));
+    console.log(data, 1111111);
+
     if (
         (data.MsgType === 'event' && data.Event === 'SCAN' && data.Ticket) ||
         (data.MsgType === 'event' && data.Event === 'subscribe' && data.Ticket)
@@ -102,6 +104,7 @@ router.post('/login', async function (req, res) {
             uid: sessions[0].user_id
         });
         const [status, { exp }] = verifyJWT(token);
+
         if (status) {
             await Db.update(
                 req,

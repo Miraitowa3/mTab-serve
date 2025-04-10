@@ -1,4 +1,3 @@
-const { privateKey, publicKey } = require('./generateKey');
 const jwt = require('jsonwebtoken');
 // 封装生成 JWT 的方法
 function generateJWT(payload, options = { algorithm: 'RS256', expiresIn: 60 * 60 * 2 }) {
@@ -9,7 +8,7 @@ function generateJWT(payload, options = { algorithm: 'RS256', expiresIn: 60 * 60
 
     // 生成 JWT
     try {
-        const token = jwt.sign(payload, privateKey, options);
+        const token = jwt.sign(payload, global.privateKey, options);
         return token;
     } catch (error) {
         console.error('Error generating JWT:', error);
@@ -20,7 +19,8 @@ function generateJWT(payload, options = { algorithm: 'RS256', expiresIn: 60 * 60
 // 封装验证 JWT 的方法
 function verifyJWT(token) {
     try {
-        const decoded = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+        const decoded = jwt.verify(token, global.publicKey, { algorithms: ['RS256'] });
+
         return [true, decoded];
     } catch (error) {
         return [false, error];
