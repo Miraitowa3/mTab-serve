@@ -57,7 +57,6 @@ const sendTemplateMessage = async (template_id, dat, openid) => {
 router.post('/', async function (req, res) {
     const xmlData = await getUserDataAsync(req);
     const data = formatMessage(await parseXMLAsync(xmlData));
-    console.log(data, 1111111);
 
     if (
         (data.MsgType === 'event' && data.Event === 'SCAN' && data.Ticket) ||

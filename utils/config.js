@@ -7,7 +7,9 @@ exports.wxConfig = {
 exports.dbConfig = {
     host: 'localhost', //主机名
     user: 'root', //用户名
-    password: 'Snow100107@', //密码
+    // password: 'Snow100107@', //密码
+    password: '123456', //密码
+
     port: 3306,
     database: 'mTab', //库名
     connectionLimit: 10 // 连接池大小

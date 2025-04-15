@@ -24,7 +24,7 @@ router.post('/sendVerifyCode', async (req, res) => {
         });
 
         if (status) {
-            let aa = await Db.insert(req, 'captcha', {
+            await Db.insert(req, 'captcha', {
                 email,
                 code,
                 expires_at: new Date().getTime() + 60 * 1000 + ''
@@ -120,10 +120,16 @@ router.post('/update', async (req, res) => {
     );
 });
 router.get('/config', async (req, res) => {
-    const data = await Db.select(
-        req,
-        `SELECT * FROM user_info WHERE user_id='${req.user}' ORDER BY create_time DESC LIMIT 1`
-    );
+    let data;
+    if (req.query.id) {
+        data = await Db.select(req, `SELECT * FROM user_info WHERE id='${req.query.id}'`);
+    } else {
+        data = await Db.select(
+            req,
+            `SELECT * FROM user_info WHERE user_id='${req.user}' ORDER BY create_time DESC LIMIT 1`
+        );
+    }
+
     if (data && data.length > 0) {
         res.send(
             Msg(200, '成功', {
@@ -136,6 +142,36 @@ router.get('/config', async (req, res) => {
         res.send(Msg(500, '未找到配置信息', {}));
     }
 });
+router.get('/history', async (req, res) => {
+    const data = await Db.select(
+        req,
+        `SELECT * FROM user_info WHERE user_id='${req.user}' ORDER BY create_time DESC`
+    );
+    if (data && data.length > 0) {
+        res.send(
+            Msg(
+                200,
+                '成功',
+                data.map((item) => ({
+                    id: item.id,
+                    create_time: item.create_time
+                }))
+            )
+        );
+    } else {
+        res.send(Msg(500, '失败', {}));
+    }
+});
+router.post('/delhistory', async (req, res) => {
+    let { id } = req.body;
+    if (id) {
+        await Db.delete(req, `DELETE FROM user_info WHERE id='${id}'`);
+        res.send(Msg(200, '成功', {}));
+    } else {
+        res.send(Msg(500, '失败', {}));
+    }
+});
+
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const data = await Db.select(req, `SELECT * FROM users WHERE email='${email}'`);
